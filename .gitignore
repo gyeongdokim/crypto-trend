@@ -1,0 +1,10 @@
+data/
+outputs/
+state/
+state_mock/
+logs/
+STOP
+__pycache__/
+.env
+*.bak
+market_watch_last.json
