@@ -16,6 +16,7 @@ function Reg($name, $bat, $trigger) {
 }
 
 Reg "CryptoPaper"    "run_paper.bat"        (New-ScheduledTaskTrigger -Daily -At 9:05am)
+Reg "CryptoLive"     "run_live.bat"         (New-ScheduledTaskTrigger -Daily -At 9:07am)   # LIVE_ENABLED=False면 아무것도 안 함
 Reg "CryptoWatch_AM" "run_watch_report.bat" (New-ScheduledTaskTrigger -Daily -At 9:10am)
 Reg "CryptoWatch_PM" "run_watch_report.bat" (New-ScheduledTaskTrigger -Daily -At 9:10pm)
 

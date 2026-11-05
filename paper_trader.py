@@ -29,21 +29,33 @@ from donchian_trend import ensemble_weight, LOOKBACKS
 # ───────────────────────── 유틸 ─────────────────────────
 def load_env(path=".env"):
     if os.path.exists(path):
-        for line in open(path, encoding="utf-8"):
+        for line in open(path, encoding="utf-8-sig"):     # -sig: 메모장이 붙이는 BOM 제거
             if "=" in line and not line.strip().startswith("#"):
                 k, v = line.strip().split("=", 1)
-                os.environ.setdefault(k.strip(), v.strip())
+                os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+
+
+TG_LIMIT = 4000                                            # 텔레그램 한 메시지 최대 4096자
 
 
 def notify(text):
-    """텔레그램 알림 (.env에 TELEGRAM_TOKEN, TELEGRAM_CHAT_ID가 있을 때만)"""
+    """텔레그램 알림 (.env에 TELEGRAM_TOKEN, TELEGRAM_CHAT_ID가 있을 때만). 성공 여부 반환
+    실패 내용은 로그에 남기되, 오류 문자열 속 URL에 들어 있는 봇 토큰은 가림"""
     tok, chat = os.environ.get("TELEGRAM_TOKEN"), os.environ.get("TELEGRAM_CHAT_ID")
-    if tok and chat:
-        try:
-            requests.post(f"https://api.telegram.org/bot{tok}/sendMessage",
+    if not (tok and chat):
+        return False
+    if len(text) > TG_LIMIT:
+        text = text[:TG_LIMIT] + "\n…(잘림)"
+    try:
+        r = requests.post(f"https://api.telegram.org/bot{tok}/sendMessage",
                           data={"chat_id": chat, "text": text}, timeout=10)
-        except Exception as e:
-            print(f"[알림 실패] {e}")
+        if not r.ok:
+            print(f"[알림 실패] HTTP {r.status_code}: {r.text[:200].replace(tok, '<TOKEN>')}")
+            return False
+        return True
+    except Exception as e:
+        print(f"[알림 실패] {type(e).__name__}: {str(e).replace(tok, '<TOKEN>')}")
+        return False
 
 
 def fetch_books(markets):
