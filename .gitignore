@@ -8,3 +8,5 @@ __pycache__/
 .env
 *.bak
 market_watch_last.json
+state_live/
+STOP_LIVE

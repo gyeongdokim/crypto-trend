@@ -14,6 +14,7 @@ import os
 import numpy as np
 import pandas as pd
 
+import config as C
 from donchian_trend import (backtest, buy_and_hold, ema_cross_weight, ensemble_weight,
                             metrics, yearly_returns, LOOKBACKS)
 
@@ -140,15 +141,17 @@ def sweep(closes, a):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--markets", nargs="+", default=["KRW-BTC", "KRW-ETH"])
-    p.add_argument("--target-vol", type=float, default=0.25, help="연 목표 변동성 (논문 25%%)")
-    p.add_argument("--vol-window", type=int, default=90)
-    p.add_argument("--cap", type=float, default=1.0, help="코인별 비중 상한 (현물이라 100%%)")
-    p.add_argument("--fee", type=float, default=0.0005, help="편도 수수료 (업비트 원화 0.05%%)")
-    p.add_argument("--slip-bp", type=float, default=5.0, help="편도 슬리피지 가정(bp)")
+    # 기본값은 config.py(실제 페이퍼·실전 운용 설정)와 같게 → 그냥 돌리면 '지금 운용 중인 전략'을 검증
+    p.add_argument("--markets", nargs="+", default=C.MARKETS)
+    p.add_argument("--target-vol", type=float, default=C.TARGET_VOL,
+                   help=f"연 목표 변동성 (운용 {C.TARGET_VOL * 100:.0f}%%, 논문 25%%)")
+    p.add_argument("--vol-window", type=int, default=C.VOL_WINDOW)
+    p.add_argument("--cap", type=float, default=C.CAP, help="코인별 비중 상한 (현물이라 100%%)")
+    p.add_argument("--fee", type=float, default=C.FEE, help="편도 수수료 (업비트 원화 0.05%%)")
+    p.add_argument("--slip-bp", type=float, default=C.BT_SLIP_BP, help="편도 슬리피지 가정(bp)")
     p.add_argument("--band", type=float, default=0.0, help="리밸런싱 생략 밴드 (예: 0.05)")
     p.add_argument("--lag", type=int, default=0, help="체결 지연 일수 (1 = 보수적)")
-    p.add_argument("--exit-rule", choices=["mid", "lower"], default="mid")
+    p.add_argument("--exit-rule", choices=["mid", "lower"], default=C.EXIT_RULE)
     p.add_argument("--start", default=None, help="평가 시작일 YYYY-MM-DD")
     p.add_argument("--no-refresh", action="store_true", help="캐시만 사용")
     p.add_argument("--synthetic", action="store_true")
